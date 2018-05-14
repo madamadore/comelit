@@ -4,24 +4,20 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
-import it.matteoavanzini.comelit.fragment.Menu1;
-import it.matteoavanzini.comelit.fragment.Menu2;
-import it.matteoavanzini.comelit.fragment.Menu3;
+import it.matteoavanzini.comelit.adapter.SimpleItemRecyclerViewAdapter;
+import it.matteoavanzini.comelit.dummy.DummyContent;
 
 /**
  * An activity representing a single Post detail screen. This
@@ -30,21 +26,15 @@ import it.matteoavanzini.comelit.fragment.Menu3;
  * in a {@link PostListActivity}.
  */
 public class PostDetailActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+    implements SimpleItemRecyclerViewAdapter.OnSimpleItemRecyclerListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        // Show the Up button in the action bar.
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -55,26 +45,6 @@ public class PostDetailActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        displaySelectedScreen(R.id.nav_menu1);
-
-        // savedInstanceState is non-null when there is fragment state
-        // saved from previous configurations of this activity
-        // (e.g. when rotating the screen from portrait to landscape).
-        // In this case, the fragment will automatically be re-added
-        // to its container so we don't need to manually add it.
-        // For more information, see the Fragments API guide at:
-        //
-        // http://developer.android.com/guide/components/fragments.html
-        //
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
@@ -89,6 +59,22 @@ public class PostDetailActivity extends AppCompatActivity
                     .add(R.id.post_detail_container, fragment)
                     .commit();
         }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.post_list);
+        // assert recyclerView != null;
+        setupRecyclerView(recyclerView);
+    }
+
+    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
+        SimpleItemRecyclerViewAdapter myAdapter = new SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, true);
+        myAdapter.setOnSimpleItemRecyclerListener(this);
+        recyclerView.setAdapter(myAdapter);
     }
 
     @Override
@@ -110,47 +96,15 @@ public class PostDetailActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        //calling the method displayselectedscreen and passing the id of selected menu
-        displaySelectedScreen(item.getItemId());
-        //make this method blank
-        return true;
-    }
-
-    private void displaySelectedScreen(int itemId) {
-
-        //creating fragment object
-        Fragment fragment = null;
-
-        //initializing the fragment object which is selected
-        switch (itemId) {
-            case R.id.nav_menu1:
-                fragment = new Menu1();
-                break;
-            case R.id.nav_menu2:
-                fragment = new Menu2();
-                break;
-            case R.id.nav_menu3:
-                fragment = new Menu3();
-                break;
-        }
-
-        //replacing the fragment
-        if (fragment != null) {
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.post_detail_container, fragment);
-            ft.commit();
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-    }
-
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.post_detail_menu, menu);
         return true;
     }
 
+    @Override
+    public void onSimpleItemRecyclerItemSelected(String itemId) {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+    }
 }

@@ -24,6 +24,11 @@ import it.matteoavanzini.comelit.dummy.DummyContent;
 public class SimpleItemRecyclerViewAdapter
         extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
+    public interface OnSimpleItemRecyclerListener {
+        void onSimpleItemRecyclerItemSelected(String itemId);
+    }
+
+    private OnSimpleItemRecyclerListener mListener;
     private final FragmentActivity mParentActivity;
     private final List<DummyContent.DummyItem> mValues;
     private final boolean mTwoPane;
@@ -34,6 +39,10 @@ public class SimpleItemRecyclerViewAdapter
         mValues = items;
         mParentActivity = parent;
         mTwoPane = twoPane;
+    }
+
+    public void setOnSimpleItemRecyclerListener(OnSimpleItemRecyclerListener listener) {
+        this.mListener = listener;
     }
 
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -51,6 +60,11 @@ public class SimpleItemRecyclerViewAdapter
                         .beginTransaction()
                         .replace(R.id.post_detail_container, fragment)
                         .commit();
+
+                if (mListener != null) {
+                    mListener.onSimpleItemRecyclerItemSelected(item.id);
+                }
+
             } else {
                 Context context = view.getContext();
                 Intent intent = new Intent(context, PostDetailActivity.class);
