@@ -1,5 +1,6 @@
 package it.matteoavanzini.comelit;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -9,8 +10,20 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
-import it.matteoavanzini.comelit.adapter.SimpleItemRecyclerViewAdapter;
-import it.matteoavanzini.comelit.dummy.DummyContent;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import it.matteoavanzini.comelit.adapter.PostItemRecyclerViewAdapter;
+import it.matteoavanzini.comelit.dummy.Post;
 
 /**
  * An activity representing a list of Posts. This activity
@@ -50,15 +63,57 @@ public class PostListActivity extends AppCompatActivity {
             mTwoPane = true;
         }
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.post_list);
-        // assert recyclerView != null;
-        setupRecyclerView(recyclerView);
+        FetchTask asyncTask = new FetchTask();
+        asyncTask.execute("https://jsonplaceholder.typicode.com/posts");
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        RecyclerView.Adapter myAdapter = new SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, mTwoPane);
+    private void setupRecyclerView(@NonNull RecyclerView recyclerView, List<Post> posts) {
+        RecyclerView.Adapter myAdapter = new PostItemRecyclerViewAdapter(this,
+                posts, mTwoPane);
         recyclerView.setAdapter(myAdapter);
     }
 
+    private class FetchTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            String responseStr = "";
+            InputStream input = null;
+            HttpURLConnection connection = null;
+
+            try {
+                for (String sUrl : params) {
+                    URL url = new URL(sUrl);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(10000);
+                    connection.connect();
+
+                    input = connection.getInputStream();
+
+                    int content = 0;
+                    while ((content = input.read()) != -1) {
+                        responseStr += (char) content;
+                    }
+                }
+            } catch (UnsupportedEncodingException e) {
+
+            } catch (IOException e) {
+
+            }
+            return responseStr;
+        }
+
+        @Override
+        protected void onPostExecute(String jsonArray) {
+            Gson gson = new Gson();
+            Type listType = new TypeToken<ArrayList<Post>>(){}.getType();
+            List<Post> postList = new Gson().fromJson(jsonArray, listType);
+
+            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.post_list);
+            // assert recyclerView != null;
+            setupRecyclerView(recyclerView, postList);
+        }
+    }
 
 }

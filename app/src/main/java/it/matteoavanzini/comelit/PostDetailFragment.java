@@ -1,16 +1,17 @@
 package it.matteoavanzini.comelit;
 
 import android.app.Activity;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
-// import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import it.matteoavanzini.comelit.dummy.DummyContent;
+import it.matteoavanzini.comelit.dummy.Post;
+
+// import android.app.Fragment;
 
 /**
  * A fragment representing a single Post detail screen.
@@ -28,7 +29,7 @@ public class PostDetailFragment extends Fragment {
     /**
      * The dummy content this fragment is presenting.
      */
-    private DummyContent.DummyItem mItem;
+    private Post mItem;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -44,12 +45,12 @@ public class PostDetailFragment extends Fragment {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+            mItem = getArguments().getParcelable(ARG_ITEM_ID);
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.content);
+                appBarLayout.setTitle(mItem.getTitle());
             }
         }
     }
@@ -63,7 +64,7 @@ public class PostDetailFragment extends Fragment {
         if (mItem != null) {
             ((TextView) rootView
                     .findViewById(R.id.post_detail))
-                    .setText(mItem.details);
+                    .setText(mItem.getTitle() + "\n" + mItem.getBody());
         }
 
         return rootView;

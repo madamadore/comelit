@@ -16,8 +16,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.util.List;
+
+import it.matteoavanzini.comelit.adapter.PostItemRecyclerViewAdapter;
 import it.matteoavanzini.comelit.adapter.SimpleItemRecyclerViewAdapter;
-import it.matteoavanzini.comelit.dummy.DummyContent;
+import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.services.JsonPlaceHolderService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * An activity representing a single Post detail screen. This
@@ -26,7 +35,8 @@ import it.matteoavanzini.comelit.dummy.DummyContent;
  * in a {@link PostListActivity}.
  */
 public class PostDetailActivity extends AppCompatActivity
-    implements SimpleItemRecyclerViewAdapter.OnSimpleItemRecyclerListener {
+    implements SimpleItemRecyclerViewAdapter.OnSimpleItemRecyclerListener,
+        PostItemRecyclerViewAdapter.OnPostItemRecyclerListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +59,9 @@ public class PostDetailActivity extends AppCompatActivity
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(PostDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(PostDetailFragment.ARG_ITEM_ID));
+            arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID,
+                    getIntent().getParcelableExtra(PostDetailFragment.ARG_ITEM_ID));
+
             PostDetailFragment fragment = new PostDetailFragment();
             fragment.setArguments(arguments);
 
@@ -67,13 +78,36 @@ public class PostDetailActivity extends AppCompatActivity
         toggle.syncState();
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.post_list);
-        // assert recyclerView != null;
-        setupRecyclerView(recyclerView);
+        getPostListWithRetrofit(recyclerView);
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        SimpleItemRecyclerViewAdapter myAdapter = new SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, true);
-        myAdapter.setOnSimpleItemRecyclerListener(this);
+    private void getPostListWithRetrofit(final RecyclerView recyclerView) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://jsonplaceholder.typicode.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        JsonPlaceHolderService service = retrofit.create(JsonPlaceHolderService.class);
+        Call<List<Post>> call = service.listPosts();
+        call.enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
+                setupRecyclerView(recyclerView, response.body());
+            }
+
+            @Override
+            public void onFailure(Call<List<Post>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void setupRecyclerView(@NonNull RecyclerView recyclerView, List<Post> postList) {
+
+        PostItemRecyclerViewAdapter myAdapter =
+                new PostItemRecyclerViewAdapter(PostDetailActivity.this,
+                        postList, true);
+        myAdapter.setOnPostItemRecyclerListener(this);
         recyclerView.setAdapter(myAdapter);
     }
 
@@ -104,6 +138,12 @@ public class PostDetailActivity extends AppCompatActivity
 
     @Override
     public void onSimpleItemRecyclerItemSelected(String itemId) {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+    }
+
+    @Override
+    public void onPostItemRecyclerSelected(int itemId) {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
     }
