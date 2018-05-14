@@ -14,6 +14,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -34,6 +36,7 @@ public class PostDetailActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
 
@@ -80,7 +83,9 @@ public class PostDetailActivity extends AppCompatActivity
                     getIntent().getStringExtra(PostDetailFragment.ARG_ITEM_ID));
             PostDetailFragment fragment = new PostDetailFragment();
             fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
+
+            getSupportFragmentManager()
+                    .beginTransaction()
                     .add(R.id.post_detail_container, fragment)
                     .commit();
         }
@@ -98,6 +103,9 @@ public class PostDetailActivity extends AppCompatActivity
             //
             navigateUpTo(new Intent(this, PostListActivity.class));
             return true;
+        }
+        if (id == R.id.bookmark_menu) {
+            // do something
         }
         return super.onOptionsItemSelected(item);
     }
@@ -138,4 +146,11 @@ public class PostDetailActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
     }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.post_detail_menu, menu);
+        return true;
+    }
+
 }
