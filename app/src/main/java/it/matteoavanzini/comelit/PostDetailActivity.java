@@ -16,8 +16,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
-import it.matteoavanzini.comelit.adapter.SimpleItemRecyclerViewAdapter;
-import it.matteoavanzini.comelit.dummy.DummyContent;
+import it.matteoavanzini.comelit.adapter.SimplePostRecyclerViewAdapter;
+import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.dummy.PostContent;
+import it.matteoavanzini.comelit.fragment.PostDetailFragment;
 
 /**
  * An activity representing a single Post detail screen. This
@@ -26,7 +28,7 @@ import it.matteoavanzini.comelit.dummy.DummyContent;
  * in a {@link PostListActivity}.
  */
 public class PostDetailActivity extends AppCompatActivity
-    implements SimpleItemRecyclerViewAdapter.OnSimpleItemRecyclerListener {
+    implements SimplePostRecyclerViewAdapter.OnSimplePostRecyclerListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +51,8 @@ public class PostDetailActivity extends AppCompatActivity
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(PostDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(PostDetailFragment.ARG_ITEM_ID));
+            Post post = getIntent().getParcelableExtra(PostDetailFragment.ARG_ITEM_ID);
+            arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID, post);
             PostDetailFragment fragment = new PostDetailFragment();
             fragment.setArguments(arguments);
 
@@ -63,6 +65,7 @@ public class PostDetailActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        toggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -72,8 +75,9 @@ public class PostDetailActivity extends AppCompatActivity
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        SimpleItemRecyclerViewAdapter myAdapter = new SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, true);
-        myAdapter.setOnSimpleItemRecyclerListener(this);
+        SimplePostRecyclerViewAdapter myAdapter =
+                new SimplePostRecyclerViewAdapter(this, PostContent.ITEMS, true);
+        myAdapter.setOnSimplePostRecyclerListener(this);
         recyclerView.setAdapter(myAdapter);
     }
 
@@ -98,12 +102,12 @@ public class PostDetailActivity extends AppCompatActivity
 
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.post_detail_menu, menu);
-        return true;
+        // inflater.inflate(R.menu.post_detail_menu, menu);
+        return false;
     }
 
     @Override
-    public void onSimpleItemRecyclerItemSelected(String itemId) {
+    public void onSimplePostRecyclerSelected(Post post) {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
     }

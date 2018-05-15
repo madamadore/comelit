@@ -13,46 +13,46 @@ import android.widget.TextView;
 import java.util.List;
 
 import it.matteoavanzini.comelit.PostDetailActivity;
-import it.matteoavanzini.comelit.fragment.PostDetailFragment;
 import it.matteoavanzini.comelit.R;
-import it.matteoavanzini.comelit.dummy.DummyContent;
+import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.fragment.PostDetailFragment;
 
 /**
  * Created by emme on 14/05/2018.
  */
 
-public class SimpleItemRecyclerViewAdapter
-        extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
+public class SimplePostRecyclerViewAdapter
+        extends RecyclerView.Adapter<SimplePostRecyclerViewAdapter.ViewHolder> {
 
-    public interface OnSimpleItemRecyclerListener {
-        void onSimpleItemRecyclerItemSelected(String itemId);
+    public interface OnSimplePostRecyclerListener {
+        void onSimplePostRecyclerSelected(Post post);
     }
 
-    private OnSimpleItemRecyclerListener mListener;
+    private OnSimplePostRecyclerListener mListener;
     private final FragmentActivity mParentActivity;
-    private final List<DummyContent.DummyItem> mValues;
+    private final List<Post> mValues;
     private final boolean mTwoPane;
 
-    public SimpleItemRecyclerViewAdapter(FragmentActivity parent,
-                                  List<DummyContent.DummyItem> items,
-                                  boolean twoPane) {
+    public SimplePostRecyclerViewAdapter(FragmentActivity parent,
+                                         List<Post> items,
+                                         boolean twoPane) {
         mValues = items;
         mParentActivity = parent;
         mTwoPane = twoPane;
     }
 
-    public void setOnSimpleItemRecyclerListener(OnSimpleItemRecyclerListener listener) {
+    public void setOnSimplePostRecyclerListener(OnSimplePostRecyclerListener listener) {
         this.mListener = listener;
     }
 
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            DummyContent.DummyItem item = (DummyContent.DummyItem) view.getTag();
+            Post item = (Post) view.getTag();
 
             if (mTwoPane) {
                 Bundle arguments = new Bundle();
-                arguments.putString(PostDetailFragment.ARG_ITEM_ID, item.id);
+                arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID, item);
                 PostDetailFragment fragment = new PostDetailFragment();
                 fragment.setArguments(arguments);
 
@@ -62,13 +62,13 @@ public class SimpleItemRecyclerViewAdapter
                         .commit();
 
                 if (mListener != null) {
-                    mListener.onSimpleItemRecyclerItemSelected(item.id);
+                    mListener.onSimplePostRecyclerSelected(item);
                 }
 
             } else {
                 Context context = view.getContext();
                 Intent intent = new Intent(context, PostDetailActivity.class);
-                intent.putExtra(PostDetailFragment.ARG_ITEM_ID, item.id);
+                intent.putExtra(PostDetailFragment.ARG_ITEM_ID, item);
 
                 context.startActivity(intent);
             }
@@ -84,9 +84,9 @@ public class SimpleItemRecyclerViewAdapter
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        DummyContent.DummyItem item = mValues.get(position);
-        holder.mIdView.setText(item.id);
-        holder.mContentView.setText(item.content);
+        Post item = mValues.get(position);
+        holder.mIdView.setText(Integer.toString(item.getId()));
+        holder.mContentView.setText(item.getTitle());
 
         holder.itemView.setTag(item);
         holder.itemView.setOnClickListener(mOnClickListener);
