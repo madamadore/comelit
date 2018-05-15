@@ -1,6 +1,7 @@
 package it.matteoavanzini.comelit;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -80,6 +81,11 @@ public class PostListActivity extends AppCompatActivity {
 
         // executeAsyncTask();
         downloadData();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        // gestion
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {

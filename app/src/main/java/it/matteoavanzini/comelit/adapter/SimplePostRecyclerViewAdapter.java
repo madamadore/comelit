@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -100,11 +101,19 @@ public class SimplePostRecyclerViewAdapter
     class ViewHolder extends RecyclerView.ViewHolder {
         final TextView mIdView;
         final TextView mContentView;
+        final ImageView mPreferred;
 
         ViewHolder(View itemLayout) {
             super(itemLayout);
             mIdView = (TextView) itemLayout.findViewById(R.id.id_text);
             mContentView = (TextView) itemLayout.findViewById(R.id.content);
+            mPreferred = (ImageView) itemLayout.findViewById(R.id.preferred);
+            mPreferred.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPreferred.setImageResource(R.drawable.ic_star_yellow_24dp);
+                }
+            });
         }
     }
 }

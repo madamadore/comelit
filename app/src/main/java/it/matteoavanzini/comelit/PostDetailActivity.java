@@ -1,10 +1,11 @@
 package it.matteoavanzini.comelit;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -30,6 +31,8 @@ import it.matteoavanzini.comelit.fragment.PostDetailFragment;
 public class PostDetailActivity extends AppCompatActivity
     implements SimplePostRecyclerViewAdapter.OnSimplePostRecyclerListener {
 
+    private static final int EDIT_POST_CODE = 42;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,19 +45,16 @@ public class PostDetailActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Post post = getVisiblePost();
+                editPost(post);
             }
         });
 
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
-            Bundle arguments = new Bundle();
             Post post = getIntent().getParcelableExtra(PostDetailFragment.ARG_ITEM_ID);
-            arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID, post);
-            PostDetailFragment fragment = new PostDetailFragment();
-            fragment.setArguments(arguments);
+            PostDetailFragment fragment = getPostDetailFragment(post);
 
             getSupportFragmentManager()
                     .beginTransaction()
@@ -74,36 +74,86 @@ public class PostDetailActivity extends AppCompatActivity
         setupRecyclerView(recyclerView);
     }
 
+    private PostDetailFragment getPostDetailFragment(Post post) {
+        Bundle arguments = new Bundle();
+        arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID, post);
+        PostDetailFragment fragment = new PostDetailFragment();
+        fragment.setArguments(arguments);
+        return fragment;
+    }
+
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        SimplePostRecyclerViewAdapter myAdapter =
+        SimplePostRecyclerViewAdapter adapter =
                 new SimplePostRecyclerViewAdapter(this, PostContent.ITEMS, true);
-        myAdapter.setOnSimplePostRecyclerListener(this);
-        recyclerView.setAdapter(myAdapter);
+        recyclerView.setAdapter(adapter);
+    }
+
+    public void editPost(Post post) {
+        Intent intent = new Intent(this, PostEditActivity.class);
+        intent.putExtra(PostEditActivity.POST_ARG, post);
+        startActivityForResult(intent, EDIT_POST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+
+        if (requestCode == EDIT_POST_CODE && resultCode == Activity.RESULT_OK) {
+            if (resultData != null) {
+
+                Post post = resultData.getParcelableExtra(PostEditActivity.POST_ARG);
+
+                PostContent.ITEMS.remove(post.getId() - 1);
+                PostContent.ITEMS.add(post.getId() - 1, post);
+
+                PostDetailFragment fragment = getPostDetailFragment(post);
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.post_detail_container, fragment)
+                        .commitAllowingStateLoss();
+            }
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == android.R.id.home) {
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
-            navigateUpTo(new Intent(this, PostListActivity.class));
-            return true;
-        }
-        if (id == R.id.bookmark_menu) {
-            // do something
+        switch (id) {
+            case R.id.home_menu:
+                navigateUpTo(new Intent(this, PostListActivity.class));
+                return true;
+
+            case R.id.share_menu:
+                // TODO: Il post deve essere letto dal Fragment corrente e non
+                // dal metodo getIntent()
+                Post post = getVisiblePost();
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.putExtra(Intent.EXTRA_TEXT, post.getBody());
+                intent.setType("text/plain");
+
+                startActivity(intent);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private Post getVisiblePost() {
+        int numberOfFragmentInStack = getSupportFragmentManager()
+                .getBackStackEntryCount();
+        Fragment lastFragment = getSupportFragmentManager()
+                .getFragments()
+                .get(numberOfFragmentInStack);
+        Post post = lastFragment.getArguments()
+                .getParcelable(PostDetailFragment.ARG_ITEM_ID);
+        return post;
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        // inflater.inflate(R.menu.post_detail_menu, menu);
-        return false;
+        inflater.inflate(R.menu.post_detail_menu, menu);
+        return true;
     }
 
     @Override

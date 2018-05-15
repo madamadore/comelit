@@ -12,6 +12,7 @@ public class Post implements Parcelable {
     private int userId;
     private String title;
     private String body;
+    private boolean preferred;
 
     public Post() {}
 
@@ -20,6 +21,8 @@ public class Post implements Parcelable {
         userId = in.readInt();
         title = in.readString();
         body = in.readString();
+        byte b = in.readByte();
+        preferred = b == 1 ? true : false;
     }
 
     public static final Creator<Post> CREATOR = new Creator<Post>() {
@@ -33,6 +36,14 @@ public class Post implements Parcelable {
             return new Post[size];
         }
     };
+
+    public boolean isPreferred() {
+        return preferred;
+    }
+
+    public void setPreferred(boolean preferred) {
+        this.preferred = preferred;
+    }
 
     public int getId() {
         return id;
@@ -77,5 +88,21 @@ public class Post implements Parcelable {
         dest.writeInt(userId);
         dest.writeString(title);
         dest.writeString(body);
+
+        byte isPreferred = (byte) (preferred ? 1 : 0);
+        dest.writeByte(isPreferred);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Post && ((Post) o).getId() == this.id) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id;
     }
 }
