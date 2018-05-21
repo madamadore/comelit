@@ -22,8 +22,7 @@ public abstract
     protected final List<T> mValues;
 
     public RecyclerViewAdapter(OnSimpleItemRecyclerListener listener,
-                               List<T> items,
-                               View.OnClickListener onClickListener) {
+                               List<T> items) {
         mValues = items;
         mListener = listener;
     }

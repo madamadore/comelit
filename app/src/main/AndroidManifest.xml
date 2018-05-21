@@ -34,6 +34,12 @@
             android:name=".PostEditActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <service android:enabled="true"
+                 android:exported="false"
+                 android:name=".services.PostDownloadService">
+        </service>
+
     </application>
 
 </manifest>

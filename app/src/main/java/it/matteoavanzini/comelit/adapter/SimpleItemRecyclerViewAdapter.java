@@ -20,7 +20,7 @@ import it.matteoavanzini.comelit.dummy.DummyContent;
 /**
  * Created by emme on 14/05/2018.
  */
-
+@Deprecated
 public class SimpleItemRecyclerViewAdapter
         extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 

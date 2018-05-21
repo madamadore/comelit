@@ -99,4 +99,10 @@ public class CommentDatabase extends SQLiteOpenHelper {
 
         db.close();
     }
+
+    public void truncate() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(CommentContract.CommentEntry.TABLE_NAME, null, null);
+        db.close();
+    }
 }

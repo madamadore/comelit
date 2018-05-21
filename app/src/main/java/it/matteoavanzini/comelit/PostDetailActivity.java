@@ -1,6 +1,7 @@
 package it.matteoavanzini.comelit;
 
 import android.app.Activity;
+import android.arch.persistence.room.Room;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -17,13 +18,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 
 import java.util.List;
 
-import it.matteoavanzini.comelit.adapter.SimplePostRecyclerViewAdapter;
+import it.matteoavanzini.comelit.adapter.CommentRecyclerViewAdapter;
+import it.matteoavanzini.comelit.adapter.RecyclerViewAdapter;
 import it.matteoavanzini.comelit.database.CommentDatabase;
-import it.matteoavanzini.comelit.dummy.PostContent;
+import it.matteoavanzini.comelit.database.PostDatabase;
 import it.matteoavanzini.comelit.fragment.PostDetailFragment;
 import it.matteoavanzini.comelit.model.Comment;
 import it.matteoavanzini.comelit.model.Post;
@@ -36,15 +37,20 @@ import it.matteoavanzini.comelit.model.Post;
  * in a {@link PostListActivity}.
  */
 public class PostDetailActivity extends AppCompatActivity
-    implements SimplePostRecyclerViewAdapter.OnSimpleItemRecyclerListener {
+    implements RecyclerViewAdapter.OnSimpleItemRecyclerListener {
 
     private static final int EDIT_POST_CODE = 42;
     private Post mPost;
+    PostDatabase postDb;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        postDb = Room.databaseBuilder(this,
+                PostDatabase.class, "database-post").build();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -78,17 +84,8 @@ public class PostDetailActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        downloadComments();
-
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.post_list);
         setupRecyclerView(recyclerView);
-    }
-
-    private void downloadComments() {
-        List<Comment> comments = getComments(mPost.getId());
-        if (comments.size() == 0) {
-            // do download
-        }
     }
 
     private PostDetailFragment getPostDetailFragment(Post post) {
@@ -109,9 +106,9 @@ public class PostDetailActivity extends AppCompatActivity
 
         List<Comment> items = getComments(mPost.getId());
 
-        ArrayAdapter<Comment> adapter =
-                new ArrayAdapter<Comment>(this, android.R.layout.list_content, items);
-        // recyclerView.setAdapter(adapter);
+        CommentRecyclerViewAdapter adapter =
+                new CommentRecyclerViewAdapter(this, items);
+        recyclerView.setAdapter(adapter);
     }
 
     public void editPost(Post post) {
@@ -129,12 +126,9 @@ public class PostDetailActivity extends AppCompatActivity
             if (resultData != null) {
 
                 Post post = resultData.getParcelableExtra(PostEditActivity.POST_ARG);
-
-                PostContent.ITEMS.remove(post.getId() - 1);
-                PostContent.ITEMS.add(post.getId() - 1, post);
+                postDb.postDao().update(post);
 
                 PostDetailFragment fragment = getPostDetailFragment(post);
-
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.post_detail_container, fragment)
@@ -177,6 +171,8 @@ public class PostDetailActivity extends AppCompatActivity
     public void onSimpleRecyclerItemSelected(Parcelable post) {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
+        // mettere a video AlertDialog
     }
 
     @Deprecated

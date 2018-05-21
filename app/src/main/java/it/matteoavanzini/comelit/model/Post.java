@@ -1,5 +1,8 @@
 package it.matteoavanzini.comelit.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -7,11 +10,17 @@ import android.os.Parcelable;
  * Created by emme on 14/05/2018.
  */
 
+@Entity
 public class Post implements Parcelable {
+    @PrimaryKey
     private int id;
+    @ColumnInfo(name="user_id")
     private int userId;
+    @ColumnInfo(name="title")
     private String title;
+    @ColumnInfo(name="body")
     private String body;
+    @ColumnInfo(name="preferred")
     private boolean preferred;
 
     public Post() {}
