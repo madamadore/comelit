@@ -1,10 +1,11 @@
 package it.matteoavanzini.comelit;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,17 +17,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
-import java.util.List;
-
-import it.matteoavanzini.comelit.adapter.PostItemRecyclerViewAdapter;
-import it.matteoavanzini.comelit.adapter.SimpleItemRecyclerViewAdapter;
+import it.matteoavanzini.comelit.adapter.SimplePostRecyclerViewAdapter;
 import it.matteoavanzini.comelit.dummy.Post;
-import it.matteoavanzini.comelit.services.JsonPlaceHolderService;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import it.matteoavanzini.comelit.dummy.PostContent;
+import it.matteoavanzini.comelit.fragment.PostDetailFragment;
+
 
 /**
  * An activity representing a single Post detail screen. This
@@ -35,8 +30,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * in a {@link PostListActivity}.
  */
 public class PostDetailActivity extends AppCompatActivity
-    implements SimpleItemRecyclerViewAdapter.OnSimpleItemRecyclerListener,
-        PostItemRecyclerViewAdapter.OnPostItemRecyclerListener {
+    implements SimplePostRecyclerViewAdapter.OnSimplePostRecyclerListener {
+
+    private static final int EDIT_POST_CODE = 42;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,20 +47,17 @@ public class PostDetailActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Post post = getVisiblePost();
+                editPost(post);
             }
         });
 
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
-            Bundle arguments = new Bundle();
-            arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID,
-                    getIntent().getParcelableExtra(PostDetailFragment.ARG_ITEM_ID));
 
-            PostDetailFragment fragment = new PostDetailFragment();
-            fragment.setArguments(arguments);
+            Post post = getIntent().getParcelableExtra(PostDetailFragment.ARG_ITEM_ID);
+            PostDetailFragment fragment = getPostDetailFragment(post);
 
             getSupportFragmentManager()
                     .beginTransaction()
@@ -74,62 +68,93 @@ public class PostDetailActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        toggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.post_list);
-        getPostListWithRetrofit(recyclerView);
+        setupRecyclerView(recyclerView);
     }
 
-    private void getPostListWithRetrofit(final RecyclerView recyclerView) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://jsonplaceholder.typicode.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
 
-        JsonPlaceHolderService service = retrofit.create(JsonPlaceHolderService.class);
-        Call<List<Post>> call = service.listPosts();
-        call.enqueue(new Callback<List<Post>>() {
-            @Override
-            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
-                setupRecyclerView(recyclerView, response.body());
-            }
 
-            @Override
-            public void onFailure(Call<List<Post>> call, Throwable t) {
-
-            }
-        });
+    private PostDetailFragment getPostDetailFragment(Post post) {
+        Bundle arguments = new Bundle();
+        arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID, post);
+        PostDetailFragment fragment = new PostDetailFragment();
+        fragment.setArguments(arguments);
+        return fragment;
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView, List<Post> postList) {
+    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
+        SimplePostRecyclerViewAdapter adapter =
+                new SimplePostRecyclerViewAdapter(this, PostContent.ITEMS, true);
+        recyclerView.setAdapter(adapter);
+    }
 
-        PostItemRecyclerViewAdapter myAdapter =
-                new PostItemRecyclerViewAdapter(PostDetailActivity.this,
-                        postList, true);
-        myAdapter.setOnPostItemRecyclerListener(this);
-        recyclerView.setAdapter(myAdapter);
+    public void editPost(Post post) {
+        Intent intent = new Intent(this, PostEditActivity.class);
+        intent.putExtra(PostEditActivity.POST_ARG, post);
+        startActivityForResult(intent, EDIT_POST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+
+        if (requestCode == EDIT_POST_CODE && resultCode == Activity.RESULT_OK) {
+            if (resultData != null) {
+
+                Post post = resultData.getParcelableExtra(PostEditActivity.POST_ARG);
+
+                PostContent.ITEMS.remove(post.getId() - 1);
+                PostContent.ITEMS.add(post.getId() - 1, post);
+
+                PostDetailFragment fragment = getPostDetailFragment(post);
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.post_detail_container, fragment)
+                        .commitAllowingStateLoss();
+            }
+        }
+
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == android.R.id.home) {
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
-            navigateUpTo(new Intent(this, PostListActivity.class));
-            return true;
-        }
-        if (id == R.id.bookmark_menu) {
-            // do something
+        switch (id) {
+            case R.id.home_menu:
+                navigateUpTo(new Intent(this, PostListActivity.class));
+                return true;
+
+            case R.id.share_menu:
+                // TODO: Il post deve essere letto dal Fragment corrente e non
+                // dal metodo getIntent()
+                Post post = getVisiblePost();
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.putExtra(Intent.EXTRA_TEXT, post.getBody());
+                intent.setType("text/plain");
+
+                startActivity(intent);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private Post getVisiblePost() {
+        int numberOfFragmentInStack = getSupportFragmentManager()
+                .getBackStackEntryCount();
+        Fragment lastFragment = getSupportFragmentManager()
+                .getFragments()
+                .get(numberOfFragmentInStack);
+        Post post = lastFragment.getArguments()
+                .getParcelable(PostDetailFragment.ARG_ITEM_ID);
+        return post;
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.post_detail_menu, menu);
@@ -137,14 +162,9 @@ public class PostDetailActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSimpleItemRecyclerItemSelected(String itemId) {
+    public void onSimplePostRecyclerSelected(Post post) {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
     }
 
-    @Override
-    public void onPostItemRecyclerSelected(int itemId) {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-    }
 }

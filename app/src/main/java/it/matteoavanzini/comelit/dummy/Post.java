@@ -8,17 +8,21 @@ import android.os.Parcelable;
  */
 
 public class Post implements Parcelable {
-    private int userId;
     private int id;
+    private int userId;
     private String title;
     private String body;
+    private boolean preferred;
 
+    public Post() {}
 
     protected Post(Parcel in) {
-        userId = in.readInt();
         id = in.readInt();
+        userId = in.readInt();
         title = in.readString();
         body = in.readString();
+        byte b = in.readByte();
+        preferred = b == 1 ? true : false;
     }
 
     public static final Creator<Post> CREATOR = new Creator<Post>() {
@@ -38,20 +42,20 @@ public class Post implements Parcelable {
         return 0;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(userId);
-        dest.writeInt(id);
-        dest.writeString(title);
-        dest.writeString(body);
-    }
-
     public int getUserId() {
         return userId;
     }
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public boolean isPreferred() {
+        return preferred;
+    }
+
+    public void setPreferred(boolean preferred) {
+        this.preferred = preferred;
     }
 
     public int getId() {
@@ -76,5 +80,29 @@ public class Post implements Parcelable {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeInt(userId);
+        dest.writeString(title);
+        dest.writeString(body);
+
+        byte isPreferred = (byte) (preferred ? 1 : 0);
+        dest.writeByte(isPreferred);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Post && ((Post) o).getId() == this.id) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id;
     }
 }

@@ -1,4 +1,4 @@
-package it.matteoavanzini.comelit;
+package it.matteoavanzini.comelit.fragment;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,6 +10,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.PostDetailActivity;
+import it.matteoavanzini.comelit.PostListActivity;
+import it.matteoavanzini.comelit.R;
+import it.matteoavanzini.comelit.dummy.DummyContent;
 
 // import android.app.Fragment;
 
@@ -19,7 +23,7 @@ import it.matteoavanzini.comelit.dummy.Post;
  * in two-pane mode (on tablets) or a {@link PostDetailActivity}
  * on handsets.
  */
-public class PostDetailFragment extends Fragment {
+public class DummyItemDetailFragment extends Fragment {
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -35,7 +39,7 @@ public class PostDetailFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public PostDetailFragment() {}
+    public DummyItemDetailFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

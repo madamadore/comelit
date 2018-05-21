@@ -8,40 +8,41 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
 
 import it.matteoavanzini.comelit.PostDetailActivity;
-import it.matteoavanzini.comelit.PostDetailFragment;
 import it.matteoavanzini.comelit.R;
 import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.fragment.PostDetailFragment;
 
 /**
  * Created by emme on 14/05/2018.
  */
 
-public class PostItemRecyclerViewAdapter
-        extends RecyclerView.Adapter<PostItemRecyclerViewAdapter.ViewHolder> {
+public class SimplePostRecyclerViewAdapter
+        extends RecyclerView.Adapter<SimplePostRecyclerViewAdapter.ViewHolder> {
 
-    public interface OnPostItemRecyclerListener {
-        void onPostItemRecyclerSelected(int itemId);
+    public interface OnSimplePostRecyclerListener {
+        void onSimplePostRecyclerSelected(Post post);
     }
 
-    private OnPostItemRecyclerListener mListener;
+    private OnSimplePostRecyclerListener mListener;
     private final FragmentActivity mParentActivity;
     private final List<Post> mValues;
     private final boolean mTwoPane;
 
-    public PostItemRecyclerViewAdapter(FragmentActivity parent,
-                                       List<Post> items,
-                                       boolean twoPane) {
+    public SimplePostRecyclerViewAdapter(FragmentActivity parent,
+                                         List<Post> items,
+                                         boolean twoPane) {
         mValues = items;
         mParentActivity = parent;
         mTwoPane = twoPane;
     }
 
-    public void setOnPostItemRecyclerListener(OnPostItemRecyclerListener listener) {
+    public void setOnSimplePostRecyclerListener(OnSimplePostRecyclerListener listener) {
         this.mListener = listener;
     }
 
@@ -62,7 +63,7 @@ public class PostItemRecyclerViewAdapter
                         .commit();
 
                 if (mListener != null) {
-                    mListener.onPostItemRecyclerSelected(item.getId());
+                    mListener.onSimplePostRecyclerSelected(item);
                 }
 
             } else {
@@ -100,11 +101,19 @@ public class PostItemRecyclerViewAdapter
     class ViewHolder extends RecyclerView.ViewHolder {
         final TextView mIdView;
         final TextView mContentView;
+        final ImageView mPreferred;
 
         ViewHolder(View itemLayout) {
             super(itemLayout);
             mIdView = (TextView) itemLayout.findViewById(R.id.id_text);
             mContentView = (TextView) itemLayout.findViewById(R.id.content);
+            mPreferred = (ImageView) itemLayout.findViewById(R.id.preferred);
+            mPreferred.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPreferred.setImageResource(R.drawable.ic_star_yellow_24dp);
+                }
+            });
         }
     }
 }
