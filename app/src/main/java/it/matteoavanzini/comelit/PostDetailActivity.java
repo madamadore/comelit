@@ -3,6 +3,7 @@ package it.matteoavanzini.comelit;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -16,11 +17,16 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+
+import java.util.List;
 
 import it.matteoavanzini.comelit.adapter.SimplePostRecyclerViewAdapter;
-import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.database.CommentDatabase;
 import it.matteoavanzini.comelit.dummy.PostContent;
 import it.matteoavanzini.comelit.fragment.PostDetailFragment;
+import it.matteoavanzini.comelit.model.Comment;
+import it.matteoavanzini.comelit.model.Post;
 
 
 /**
@@ -30,10 +36,10 @@ import it.matteoavanzini.comelit.fragment.PostDetailFragment;
  * in a {@link PostListActivity}.
  */
 public class PostDetailActivity extends AppCompatActivity
-    implements SimplePostRecyclerViewAdapter.OnSimplePostRecyclerListener {
+    implements SimplePostRecyclerViewAdapter.OnSimpleItemRecyclerListener {
 
     private static final int EDIT_POST_CODE = 42;
-
+    private Post mPost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +53,8 @@ public class PostDetailActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Post post = getVisiblePost();
-                editPost(post);
+                //Post post = getVisiblePost();
+                editPost(mPost);
             }
         });
 
@@ -56,8 +62,8 @@ public class PostDetailActivity extends AppCompatActivity
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
 
-            Post post = getIntent().getParcelableExtra(PostDetailFragment.ARG_ITEM_ID);
-            PostDetailFragment fragment = getPostDetailFragment(post);
+            mPost = getIntent().getParcelableExtra(PostDetailFragment.ARG_ITEM_ID);
+            PostDetailFragment fragment = getPostDetailFragment(mPost);
 
             getSupportFragmentManager()
                     .beginTransaction()
@@ -72,11 +78,18 @@ public class PostDetailActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        downloadComments();
+
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.post_list);
         setupRecyclerView(recyclerView);
     }
 
-
+    private void downloadComments() {
+        List<Comment> comments = getComments(mPost.getId());
+        if (comments.size() == 0) {
+            // do download
+        }
+    }
 
     private PostDetailFragment getPostDetailFragment(Post post) {
         Bundle arguments = new Bundle();
@@ -86,15 +99,25 @@ public class PostDetailActivity extends AppCompatActivity
         return fragment;
     }
 
+    private List<Comment> getComments(int postId) {
+        CommentDatabase db = new CommentDatabase(this);
+        List<Comment> comments = db.getComments(postId);
+        return comments;
+    }
+
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        SimplePostRecyclerViewAdapter adapter =
-                new SimplePostRecyclerViewAdapter(this, PostContent.ITEMS, true);
-        recyclerView.setAdapter(adapter);
+
+        List<Comment> items = getComments(mPost.getId());
+
+        ArrayAdapter<Comment> adapter =
+                new ArrayAdapter<Comment>(this, android.R.layout.list_content, items);
+        // recyclerView.setAdapter(adapter);
     }
 
     public void editPost(Post post) {
         Intent intent = new Intent(this, PostEditActivity.class);
         intent.putExtra(PostEditActivity.POST_ARG, post);
+
         startActivityForResult(intent, EDIT_POST_CODE);
     }
 
@@ -143,6 +166,20 @@ public class PostDetailActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.post_detail_menu, menu);
+        return true;
+    }
+
+    @Override
+    public void onSimpleRecyclerItemSelected(Parcelable post) {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+    }
+
+    @Deprecated
     private Post getVisiblePost() {
         int numberOfFragmentInStack = getSupportFragmentManager()
                 .getBackStackEntryCount();
@@ -152,19 +189,6 @@ public class PostDetailActivity extends AppCompatActivity
         Post post = lastFragment.getArguments()
                 .getParcelable(PostDetailFragment.ARG_ITEM_ID);
         return post;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.post_detail_menu, menu);
-        return true;
-    }
-
-    @Override
-    public void onSimplePostRecyclerSelected(Post post) {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
     }
 
 }

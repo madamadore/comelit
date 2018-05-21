@@ -3,12 +3,15 @@ package it.matteoavanzini.comelit.dummy;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.matteoavanzini.comelit.model.Post;
+
 /**
  * Helper class for providing sample content for user interfaces created by
  * Android template wizards.
  * <p>
  * TODO: Replace all uses of this class before publishing your app.
  */
+@Deprecated
 public class PostContent {
 
     /**

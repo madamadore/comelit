@@ -2,7 +2,7 @@ package it.matteoavanzini.comelit.services;
 
 import java.util.List;
 
-import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.model.Post;
 import retrofit2.Call;
 import retrofit2.http.GET;
 

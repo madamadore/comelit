@@ -13,7 +13,7 @@ import android.widget.TextView;
 import it.matteoavanzini.comelit.PostDetailActivity;
 import it.matteoavanzini.comelit.PostListActivity;
 import it.matteoavanzini.comelit.R;
-import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.model.Post;
 
 // import android.app.Fragment;
 

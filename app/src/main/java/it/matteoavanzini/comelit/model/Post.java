@@ -1,4 +1,4 @@
-package it.matteoavanzini.comelit.dummy;
+package it.matteoavanzini.comelit.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

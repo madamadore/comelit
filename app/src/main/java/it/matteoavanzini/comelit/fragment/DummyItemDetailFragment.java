@@ -9,11 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.model.Post;
 import it.matteoavanzini.comelit.PostDetailActivity;
 import it.matteoavanzini.comelit.PostListActivity;
 import it.matteoavanzini.comelit.R;
-import it.matteoavanzini.comelit.dummy.DummyContent;
 
 // import android.app.Fragment;
 

@@ -9,7 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
 
-import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.model.Post;
 
 public class PostEditActivity extends AppCompatActivity {
 
@@ -51,6 +51,7 @@ public class PostEditActivity extends AppCompatActivity {
             Intent resultData = new Intent();
             resultData.putExtra(POST_ARG, mPost);
             setResult(Activity.RESULT_OK, resultData);
+
             finish();
         } else {
             // snackbar che indica l'errore

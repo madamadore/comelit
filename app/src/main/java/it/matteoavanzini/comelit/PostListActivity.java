@@ -28,7 +28,7 @@ import java.util.List;
 
 
 import it.matteoavanzini.comelit.adapter.SimplePostRecyclerViewAdapter;
-import it.matteoavanzini.comelit.dummy.Post;
+import it.matteoavanzini.comelit.model.Post;
 import it.matteoavanzini.comelit.dummy.PostContent;
 import it.matteoavanzini.comelit.services.JsonPlaceHolderService;
 import retrofit2.Call;
@@ -96,6 +96,9 @@ public class PostListActivity extends AppCompatActivity {
         recyclerView.setAdapter(mAdapter);
     }
 
+    /**
+     * esempio di uso della libreria Retrofit
+     * */
     private void downloadData() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://jsonplaceholder.typicode.com/")
