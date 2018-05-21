@@ -19,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import it.matteoavanzini.comelit.adapter.CommentRecyclerViewAdapter;
@@ -28,6 +29,7 @@ import it.matteoavanzini.comelit.database.PostDatabase;
 import it.matteoavanzini.comelit.fragment.PostDetailFragment;
 import it.matteoavanzini.comelit.model.Comment;
 import it.matteoavanzini.comelit.model.Post;
+import it.matteoavanzini.comelit.services.LoadDatabaseTask;
 
 
 /**
@@ -41,7 +43,9 @@ public class PostDetailActivity extends AppCompatActivity
 
     private static final int EDIT_POST_CODE = 42;
     private Post mPost;
-    PostDatabase postDb;
+    private PostDatabase postDb;
+    private List<Comment> mComments;
+    private CommentRecyclerViewAdapter mAdapter;
 
 
     @Override
@@ -96,19 +100,10 @@ public class PostDetailActivity extends AppCompatActivity
         return fragment;
     }
 
-    private List<Comment> getComments(int postId) {
-        CommentDatabase db = new CommentDatabase(this);
-        List<Comment> comments = db.getComments(postId);
-        return comments;
-    }
-
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-
-        List<Comment> items = getComments(mPost.getId());
-
-        CommentRecyclerViewAdapter adapter =
-                new CommentRecyclerViewAdapter(this, items);
-        recyclerView.setAdapter(adapter);
+        mComments = new ArrayList<>();
+        mAdapter = new CommentRecyclerViewAdapter(this, mComments);
+        recyclerView.setAdapter(mAdapter);
     }
 
     public void editPost(Post post) {
@@ -185,6 +180,30 @@ public class PostDetailActivity extends AppCompatActivity
         Post post = lastFragment.getArguments()
                 .getParcelable(PostDetailFragment.ARG_ITEM_ID);
         return post;
+    }
+
+    private class LoadPostTask extends LoadDatabaseTask<Comment> {
+
+        LoadPostTask() {
+            super(PostDetailActivity.this);
+        }
+
+        @Override
+        protected List<Comment> doInBackground(Void... params) {
+            return getComments(mPost.getId());
+        }
+
+        @Override
+        public void onTaskEnd(List<Comment> result) {
+            mComments.addAll(result);
+            mAdapter.notifyDataSetChanged();
+        }
+
+        private List<Comment> getComments(int postId) {
+            CommentDatabase db = new CommentDatabase(PostDetailActivity.this);
+            List<Comment> comments = db.getComments(postId);
+            return comments;
+        }
     }
 
 }

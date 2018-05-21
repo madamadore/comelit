@@ -32,17 +32,14 @@ public class CommentRecyclerViewAdapter
 
     @Override
     public void onBindViewHolder(ViewHolder holder, Comment comment) {
-        holder.mEmailView.setText(comment.getEmail());
         holder.mNameView.setText(comment.getName());
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        final TextView mEmailView;
         final TextView mNameView;
 
         ViewHolder(View itemLayout) {
             super(itemLayout);
-            mEmailView = (TextView) itemLayout.findViewById(R.id.email);
             mNameView = (TextView) itemLayout.findViewById(R.id.name);
         }
     }

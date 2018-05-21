@@ -1,10 +1,8 @@
 package it.matteoavanzini.comelit;
 
 
-import android.app.ProgressDialog;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -21,6 +19,7 @@ import java.util.List;
 import it.matteoavanzini.comelit.adapter.SimplePostRecyclerViewAdapter;
 import it.matteoavanzini.comelit.database.PostDatabase;
 import it.matteoavanzini.comelit.model.Post;
+import it.matteoavanzini.comelit.services.LoadDatabaseTask;
 import it.matteoavanzini.comelit.services.PostDownloadService;
 
 /**
@@ -97,42 +96,14 @@ public class PostListActivity extends AppCompatActivity {
     }
 
     private void loadDataFromDatabaseAsync() {
-        LoadDatabaseTask task = new LoadDatabaseTask();
+        LoadPostTask task = new LoadPostTask();
         task.execute();
     }
 
-    private ProgressDialog getProgressDialog() {
-        ProgressDialog progressDialog = new ProgressDialog(PostListActivity.this);
-        progressDialog.setMax(100);
-        progressDialog.setMessage("Please wait....");
-        progressDialog.setTitle("Loading posts");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        return progressDialog;
-    }
+    private class LoadPostTask extends LoadDatabaseTask<Post> {
 
-    private class LoadDatabaseTask extends AsyncTask<Void, Integer, List<Post>> {
-
-        private ProgressDialog progressDialog;
-        private final String TAG = LoadDatabaseTask.class.getName();
-
-        @Override
-        protected void onProgressUpdate(Integer... progress) {
-            progressDialog.setProgress(progress[0]);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            progressDialog = getProgressDialog();
-            // show it
-            progressDialog.show();
-        }
-
-        @Override
-        protected void onPostExecute(List<Post> result) {
-            mPost.addAll(result);
-            Log.d(TAG, "End load posts");
-            mAdapter.notifyDataSetChanged();
-            progressDialog.dismiss();
+        LoadPostTask() {
+            super(PostListActivity.this);
         }
 
         @Override
@@ -141,5 +112,13 @@ public class PostListActivity extends AppCompatActivity {
             Log.d(TAG, "Nel db ci sono " + posts.size() + " post");
             return posts;
         }
+
+        @Override
+        public void onTaskEnd(List<Post> result) {
+            mPost.addAll(result);
+            mAdapter.notifyDataSetChanged();
+        }
     }
+
+
 }
