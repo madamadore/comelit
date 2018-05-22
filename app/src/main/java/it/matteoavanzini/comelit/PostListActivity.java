@@ -43,6 +43,8 @@ import it.matteoavanzini.comelit.services.PostDownloadService;
 public class PostListActivity extends AppCompatActivity
         implements RecyclerViewAdapter.OnSimpleItemRecyclerListener {
 
+    private static final String PREF_NAME = "post-preferences";
+    private static final String KEY_ALARM_SET = "alarm";
     private static final String TAG = PostListActivity.class.getName();
     private boolean mTwoPane;
     private boolean isPickActivity;
@@ -107,14 +109,14 @@ public class PostListActivity extends AppCompatActivity
     }
 
     private void setAlarmDownloadPost() {
-        SharedPreferences preferences = getSharedPreferences("my_shared_preference", MODE_PRIVATE);
-        boolean alarmSet = preferences.getBoolean("ALARM_SET", false);
+        SharedPreferences preferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        boolean alarmSet = preferences.getBoolean(KEY_ALARM_SET, false);
         if (!alarmSet) {
             Intent setAlarmIntent = new Intent("it.comelit.receiver.SET_ALARM");
             sendBroadcast(setAlarmIntent);
 
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putBoolean("ALARM_SET", true);
+            editor.putBoolean(KEY_ALARM_SET, true);
             editor.commit();
         }
     }
@@ -158,35 +160,46 @@ public class PostListActivity extends AppCompatActivity
         task.execute();
     }
 
+    private void onActionPickEnd(Post item) {
+        Intent resultData = new Intent();
+        int postId = item.getId();
+        Uri uri = PostProvider.CONTENT_URI
+                .buildUpon()
+                .appendPath("posts")
+                .appendPath(Integer.toString(postId))
+                .build();
+        resultData.setData(uri);
+        setResult(RESULT_OK, resultData);
+        finish();
+    }
+
+    private void onLoadFragmentDetail(Post item) {
+        Bundle arguments = new Bundle();
+        arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID, item);
+        PostDetailFragment fragment = new PostDetailFragment();
+        fragment.setArguments(arguments);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.post_detail_container, fragment)
+                .commit();
+    }
+
+    private void onStartDetailActivity(Post item) {
+        Intent intent = new Intent(this, PostDetailActivity.class);
+        intent.putExtra(PostDetailFragment.ARG_ITEM_ID, item);
+        startActivity(intent);
+    }
+
     @Override
     public void onSimpleRecyclerItemSelected(Parcelable item) {
-        Intent callingIntent = getIntent();
-        if (callingIntent.getAction().equals(Intent.ACTION_PICK)) {
-            Intent resultData = new Intent();
-            int postId = ((Post) item).getId();
-            Uri uri = PostProvider.CONTENT_URI
-                    .buildUpon()
-                    .appendPath("posts")
-                    .appendPath(Integer.toString(postId))
-                    .build();
-            resultData.setData(uri);
-            setResult(RESULT_OK, resultData);
-            finish();
+        if (isPickActivity) {
+            onActionPickEnd((Post) item);
         } else {
             if (mTwoPane) {
-                Bundle arguments = new Bundle();
-                arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID, item);
-                PostDetailFragment fragment = new PostDetailFragment();
-                fragment.setArguments(arguments);
-
-                getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.post_detail_container, fragment)
-                    .commit();
+                onLoadFragmentDetail((Post) item);
             } else {
-                Intent intent = new Intent(this, PostDetailActivity.class);
-                intent.putExtra(PostDetailFragment.ARG_ITEM_ID, item);
-                startActivity(intent);
+                onStartDetailActivity((Post) item);
             }
         }
     }

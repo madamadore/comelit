@@ -71,7 +71,7 @@ public class PostDownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("LocalService", "Received start id " + startId + ": " + intent);
+        Log.d("LocalService", "Received start id " + startId + ": " + intent);
         String action = intent.getAction();
         if (action.equals(ACTION_DOWNLOAD_COMMENT)) {
             downloadComments();
