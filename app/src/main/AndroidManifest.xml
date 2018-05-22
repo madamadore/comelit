@@ -40,6 +40,16 @@
                  android:name=".services.PostDownloadService">
         </service>
 
+        <receiver android:name=".services.AlarmReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="it.comelit.receiver.SET_ALARM" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

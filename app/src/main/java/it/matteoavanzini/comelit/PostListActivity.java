@@ -2,11 +2,16 @@ package it.matteoavanzini.comelit;
 
 
 import android.arch.persistence.room.Room;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -37,6 +42,14 @@ public class PostListActivity extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter;
     List<Post> mPost = new ArrayList<>();
     PostDatabase postDb;
+    BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(PostDownloadService.ACTION_POST_DOWNLOADED)) {
+                loadDataFromDatabaseAsync();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,15 +87,45 @@ public class PostListActivity extends AppCompatActivity {
         setupRecyclerView(recyclerView);
 
         loadDataFromDatabaseAsync();
+
+        setAlarmDownloadPost();
+    }
+
+    private void setAlarmDownloadPost() {
+        SharedPreferences preferences = getSharedPreferences("my_shared_preference", MODE_PRIVATE);
+        boolean alarmSet = preferences.getBoolean("ALARM_SET", false);
+        if (!alarmSet) {
+            Intent setAlarmIntent = new Intent("it.comelit.receiver.SET_ALARM");
+            sendBroadcast(setAlarmIntent);
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean("ALARM_SET", true);
+            editor.commit();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(PostDownloadService.ACTION_POST_DOWNLOADED);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     }
 
     private void startDownloadService() {
-        Intent intent = new Intent(this, PostDownloadService.class);
-        intent.setAction(PostDownloadService.ACTION_DOWNLOAD_POST);
-        startService(intent);
+        Intent downloadPost = new Intent(this, PostDownloadService.class);
+        downloadPost.setAction(PostDownloadService.ACTION_DOWNLOAD_POST);
+        startService(downloadPost);
 
-        intent.setAction(PostDownloadService.ACTION_DOWNLOAD_COMMENT);
-        startService(intent);
+        Intent downloadComment = new Intent(this, PostDownloadService.class);
+        downloadComment.setAction(PostDownloadService.ACTION_DOWNLOAD_COMMENT);
+        startService(downloadComment);
     }
 
     @Override

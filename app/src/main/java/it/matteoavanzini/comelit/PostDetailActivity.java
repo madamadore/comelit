@@ -90,6 +90,9 @@ public class PostDetailActivity extends AppCompatActivity
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.post_list);
         setupRecyclerView(recyclerView);
+
+        LoadCommentTask loadTask = new LoadCommentTask();
+        loadTask.execute();
     }
 
     private PostDetailFragment getPostDetailFragment(Post post) {
@@ -182,9 +185,9 @@ public class PostDetailActivity extends AppCompatActivity
         return post;
     }
 
-    private class LoadPostTask extends LoadDatabaseTask<Comment> {
+    private class LoadCommentTask extends LoadDatabaseTask<Comment> {
 
-        LoadPostTask() {
+        LoadCommentTask() {
             super(PostDetailActivity.this);
         }
 

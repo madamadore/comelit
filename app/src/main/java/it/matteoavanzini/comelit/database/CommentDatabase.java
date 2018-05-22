@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -65,6 +66,11 @@ public class CommentDatabase extends SQLiteOpenHelper {
         }
         db.close();
         return comments;
+    }
+
+    public void insert(Comment... comments) {
+        List<Comment> commentList = Arrays.asList(comments);
+        insert(commentList);
     }
 
     public void insert(List<Comment> comments) {
