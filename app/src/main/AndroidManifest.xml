@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <permission android:name="it.comelit.permission.READ_DATABASE"
+        android:label="@string/app_read_database"
+        android:protectionLevel="normal" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -20,6 +24,11 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PICK" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="it.comelit.provider/item.post" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".PostDetailActivity"
@@ -33,10 +42,10 @@
         <activity
             android:name=".PostEditActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service android:enabled="true"
-                 android:exported="false"
+                 android:exported="true"
                  android:name=".services.PostDownloadService">
         </service>
 
@@ -49,6 +58,14 @@
                 <action android:name="it.comelit.receiver.SET_ALARM" />
             </intent-filter>
         </receiver>
+
+        <provider
+            android:name=".provider.PostProvider"
+            android:authorities="it.comelit.provider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:label="PostProvider"
+            android:readPermission="it.comelit.permission.READ_DATABASE" />
 
     </application>
 

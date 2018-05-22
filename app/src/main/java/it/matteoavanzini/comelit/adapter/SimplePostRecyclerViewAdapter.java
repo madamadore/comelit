@@ -1,6 +1,5 @@
 package it.matteoavanzini.comelit.adapter;
 
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +17,11 @@ import it.matteoavanzini.comelit.model.Post;
  */
 
 public class SimplePostRecyclerViewAdapter
-        extends SimpleRecyclerViewAdapter<Post, SimplePostRecyclerViewAdapter.ViewHolder> {
+        extends RecyclerViewAdapter<Post, SimplePostRecyclerViewAdapter.ViewHolder> {
 
-    public SimplePostRecyclerViewAdapter(FragmentActivity parent,
-                                         List<Post> items,
-                                         boolean twoPane) {
-        super(parent, items, twoPane);
+    public SimplePostRecyclerViewAdapter(OnSimpleItemRecyclerListener parent,
+                                         List<Post> items) {
+        super(parent, items);
     }
 
     @Override

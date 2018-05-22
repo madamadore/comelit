@@ -7,7 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,9 +23,12 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.matteoavanzini.comelit.adapter.RecyclerViewAdapter;
 import it.matteoavanzini.comelit.adapter.SimplePostRecyclerViewAdapter;
 import it.matteoavanzini.comelit.database.PostDatabase;
+import it.matteoavanzini.comelit.fragment.PostDetailFragment;
 import it.matteoavanzini.comelit.model.Post;
+import it.matteoavanzini.comelit.provider.PostProvider;
 import it.matteoavanzini.comelit.services.LoadDatabaseTask;
 import it.matteoavanzini.comelit.services.PostDownloadService;
 
@@ -35,11 +40,13 @@ import it.matteoavanzini.comelit.services.PostDownloadService;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class PostListActivity extends AppCompatActivity {
+public class PostListActivity extends AppCompatActivity
+        implements RecyclerViewAdapter.OnSimpleItemRecyclerListener {
 
     private static final String TAG = PostListActivity.class.getName();
     private boolean mTwoPane;
-    private RecyclerView.Adapter mAdapter;
+    private boolean isPickActivity;
+    private SimplePostRecyclerViewAdapter mAdapter;
     List<Post> mPost = new ArrayList<>();
     PostDatabase postDb;
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -76,6 +83,7 @@ public class PostListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+        setIsPickActivity(getIntent());
 
         startDownloadService();
 
@@ -89,6 +97,13 @@ public class PostListActivity extends AppCompatActivity {
         loadDataFromDatabaseAsync();
 
         setAlarmDownloadPost();
+    }
+
+    private void setIsPickActivity(Intent intent) {
+        isPickActivity = false;
+        if (intent.getAction().equals(Intent.ACTION_PICK)) {
+            isPickActivity = true;
+        }
     }
 
     private void setAlarmDownloadPost() {
@@ -130,17 +145,50 @@ public class PostListActivity extends AppCompatActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
-        // gestion
+        setIsPickActivity(intent);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        mAdapter = new SimplePostRecyclerViewAdapter(this, mPost, mTwoPane);
+        mAdapter = new SimplePostRecyclerViewAdapter(this, mPost);
         recyclerView.setAdapter(mAdapter);
     }
 
     private void loadDataFromDatabaseAsync() {
         LoadPostTask task = new LoadPostTask();
         task.execute();
+    }
+
+    @Override
+    public void onSimpleRecyclerItemSelected(Parcelable item) {
+        Intent callingIntent = getIntent();
+        if (callingIntent.getAction().equals(Intent.ACTION_PICK)) {
+            Intent resultData = new Intent();
+            int postId = ((Post) item).getId();
+            Uri uri = PostProvider.CONTENT_URI
+                    .buildUpon()
+                    .appendPath("posts")
+                    .appendPath(Integer.toString(postId))
+                    .build();
+            resultData.setData(uri);
+            setResult(RESULT_OK, resultData);
+            finish();
+        } else {
+            if (mTwoPane) {
+                Bundle arguments = new Bundle();
+                arguments.putParcelable(PostDetailFragment.ARG_ITEM_ID, item);
+                PostDetailFragment fragment = new PostDetailFragment();
+                fragment.setArguments(arguments);
+
+                getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.post_detail_container, fragment)
+                    .commit();
+            } else {
+                Intent intent = new Intent(this, PostDetailActivity.class);
+                intent.putExtra(PostDetailFragment.ARG_ITEM_ID, item);
+                startActivity(intent);
+            }
+        }
     }
 
     private class LoadPostTask extends LoadDatabaseTask<Post> {

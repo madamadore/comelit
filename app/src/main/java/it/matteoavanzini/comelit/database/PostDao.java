@@ -5,6 +5,7 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+import android.database.Cursor;
 
 import java.util.List;
 
@@ -32,4 +33,10 @@ public interface PostDao {
 
     @Query("DELETE FROM post")
     void truncate();
+
+    @Query("SELECT * FROM post")
+    Cursor getCursorAllPost();
+
+    @Query("SELECT * FROM post WHERE id = :id")
+    Cursor loadPostById(int id);
 }
