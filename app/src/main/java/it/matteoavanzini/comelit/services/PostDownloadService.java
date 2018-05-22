@@ -73,6 +73,7 @@ public class PostDownloadService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("LocalService", "Received start id " + startId + ": " + intent);
         String action = intent.getAction();
+
         if (action.equals(ACTION_DOWNLOAD_COMMENT)) {
             downloadComments();
         } else if (action.equals(ACTION_DOWNLOAD_POST)) {
@@ -211,11 +212,14 @@ public class PostDownloadService extends Service {
         if (procInfos != null)
         {
             for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
-                if (processInfo.processName.equals(packageName)) {
+                if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+                        && processInfo.processName.equals(packageName)) {
                     return true;
                 }
             }
         }
         return false;
     }
+
+
 }

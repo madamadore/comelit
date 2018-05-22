@@ -111,7 +111,7 @@ public class PostListActivity extends AppCompatActivity
     private void setAlarmDownloadPost() {
         SharedPreferences preferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         boolean alarmSet = preferences.getBoolean(KEY_ALARM_SET, false);
-        if (!alarmSet) {
+        if (!alarmSet || alarmSet) {
             Intent setAlarmIntent = new Intent("it.comelit.receiver.SET_ALARM");
             sendBroadcast(setAlarmIntent);
 

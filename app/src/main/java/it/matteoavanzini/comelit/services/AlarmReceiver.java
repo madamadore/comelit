@@ -27,9 +27,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     private void setAlarm(Context context) {
         alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, PostDownloadService.class);
-        intent.setAction(PostDownloadService.ACTION_DOWNLOAD_POST);
-        alarmIntent = PendingIntent.getService(context, 0, intent, 0);
+
+        //Intent intent = new Intent("it.comelit.receiver.START_SERVICE");
+        //alarmIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent intentService = new Intent(context, PostDownloadService.class);
+        intentService.setAction(PostDownloadService.ACTION_DOWNLOAD_POST);
+        alarmIntent = PendingIntent.getService(context, 0, intentService, PendingIntent.FLAG_UPDATE_CURRENT);
         Log.d(TAG, "Set inexact repeting alarm");
         alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 ONE_MINUTE, TWO_MINUTE, alarmIntent);
